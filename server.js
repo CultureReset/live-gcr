@@ -16,6 +16,10 @@ app.use('/api/auth', authRouter);
 const dashboardRouter = require('./routes/dashboard');
 app.use('/api/dashboard', dashboardRouter);
 
+const updateLinkRouter = require('./routes/update-link');
+app.use('/api/update', updateLinkRouter);
+app.use('/update',     updateLinkRouter);
+
 // Health check
 app.get('/api/health', (req, res) => res.json({ status: 'ok', service: 'live-gcr' }));
 

@@ -12,6 +12,7 @@
     { "src": "/login", "dest": "/login.html" },
     { "src": "/admin", "dest": "/admin/index.html" },
     { "src": "/admin/(.*)", "dest": "/admin/$1" },
+    { "src": "/", "dest": "/public/index3.html" },
     { "src": "/(.*)", "dest": "/public/$1" }
   ],
   "headers": [
