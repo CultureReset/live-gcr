@@ -1,8 +1,8 @@
 // ============================================
 // Supabase Client — Direct browser connection
 // ============================================
-const SUPABASE_URL = 'https://mhafixflyffflwjhcgfn.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1oYWZpeGZseWZmZmx3amhjZ2ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4MTA4MzUsImV4cCI6MjA4NzM4NjgzNX0.3KW-rGnLhJQ1u3IsSeoGFfgQpcoJNdBGFOGnhc88tHw';
+const SUPABASE_URL = 'https://adpnhipmdefutkzzltbs.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFkcG5oaXBtZGVmdXRrenpsdGJzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ4NjAwNzQsImV4cCI6MjA5MDQzNjA3NH0.5VdM8XRTo793rgEOBwSDjE5bbLeLYXOCI2zB93a08j8';
 
 // Save CDN reference BEFORE var declaration overwrites window.supabase
 var _supabaseLib = window.supabase;

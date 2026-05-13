@@ -1225,7 +1225,7 @@
     (function() {
       var gcrToken = localStorage.getItem('sb-adpnhipmdefutkzzltbs-auth-token');
       if (!gcrToken) {
-        window.location.replace('signup.html');
+        window.location.replace('/login');
       }
     })();
   </script>
@@ -1522,7 +1522,7 @@
 (async function() {
   try {
     var { data: sessionData } = await window.gcrSupabase.auth.getSession();
-    if (!sessionData || !sessionData.session) { window.location.replace('signup.html'); return; }
+    if (!sessionData || !sessionData.session) { window.location.replace('/login'); return; }
     var userId = sessionData.session.user.id;
 
     // Load profile — set business name + type in sidebar
