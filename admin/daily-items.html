@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Catch of the Day — ${esc(name)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0b1d2e;color:#f1f5f9;min-height:100vh;padding-bottom:80px;}
+.header{background:linear-gradient(135deg,#0e7490,#0c4a6e);padding:20px 16px 16px;display:flex;align-items:center;gap:12px;}
+.header .icon{font-size:36px;}
+.header h1{font-size:19px;font-weight:700;line-height:1.2;}
+.header .sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:3px;}
+.content{padding:16px;}
+.section-label{font-size:11px;font-weight:700;color:#38bdf8;text-transform:uppercase;letter-spacing:.08em;margin:16px 0 8px;}
+.catch-card{background:#132033;border:1px solid #1e3a5f;border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:flex-start;}
+.catch-img{width:56px;height:56px;border-radius:8px;object-fit:cover;flex-shrink:0;}
+.catch-img-ph{width:56px;height:56px;border-radius:8px;background:#1e3a5f;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+.catch-info{flex:1;min-width:0;}
+.catch-name{font-size:15px;font-weight:700;}
+.catch-price{font-size:14px;color:#38bdf8;margin-top:3px;font-weight:600;}
+.catch-desc{font-size:13px;color:#94a3b8;margin-top:4px;line-height:1.4;}
+.catch-actions{display:flex;gap:8px;margin-top:10px;}
+.btn-edit{font-size:12px;padding:5px 12px;background:#1e3a5f;color:#93c5fd;border:none;border-radius:6px;cursor:pointer;}
+.btn-remove{font-size:12px;padding:5px 12px;background:transparent;color:#f87171;border:1px solid #7f1d1d;border-radius:6px;cursor:pointer;}
+.btn-add{display:flex;align-items:center;gap:8px;width:100%;padding:14px;background:transparent;border:2px dashed #1e3a5f;border-radius:12px;color:#38bdf8;font-size:15px;font-weight:600;cursor:pointer;margin-top:4px;justify-content:center;}
+.btn-add:active{background:#132033;}
+.market-badge{display:inline-block;background:#164e63;color:#67e8f9;font-size:12px;padding:2px 10px;border-radius:20px;font-weight:700;}
+.empty{text-align:center;padding:40px 16px;color:#475569;font-size:14px;}
+.empty .fish{font-size:48px;margin-bottom:12px;}
+
+/* Form */
+.form-card{background:#132033;border:1px solid #1e3a5f;border-radius:12px;padding:16px;margin-top:4px;}
+.form-card h3{font-size:16px;font-weight:700;margin-bottom:14px;}
+.field{margin-bottom:12px;}
+.field label{display:block;font-size:12px;color:#94a3b8;margin-bottom:5px;font-weight:600;}
+.field input,.field textarea{width:100%;background:#0b1d2e;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;color:#f1f5f9;font-size:15px;}
+.field input:focus,.field textarea:focus{outline:none;border-color:#0e7490;}
+.field textarea{resize:none;height:64px;}
+.market-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;font-size:14px;}
+.market-row input[type=checkbox]{width:20px;height:20px;accent-color:#0e7490;}
+.img-area{border:2px dashed #1e3a5f;border-radius:10px;padding:16px;text-align:center;cursor:pointer;margin-bottom:12px;}
+.img-area img{max-height:110px;border-radius:8px;margin-bottom:8px;display:block;margin-left:auto;margin-right:auto;}
+.img-area .cam{font-size:28px;margin-bottom:6px;}
+.img-area p{font-size:13px;color:#64748b;}
+.btn-save{width:100%;padding:14px;background:#0e7490;color:#fff;font-size:16px;font-weight:700;border:none;border-radius:10px;cursor:pointer;margin-bottom:10px;}
+.btn-cancel{width:100%;padding:12px;background:#1e3a5f;color:#f1f5f9;font-size:14px;border:none;border-radius:10px;cursor:pointer;}
+.divider{border:none;border-top:1px solid #1e3a5f;margin:20px 0;}
+
+/* Toast & spinner */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0e7490;color:#fff;padding:10px 20px;border-radius:20px;font-size:14px;font-weight:600;z-index:200;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.spinner-wrap{display:none;position:fixed;inset:0;background:rgba(11,29,46,.75);z-index:150;align-items:center;justify-content:center;}
+.spinner-wrap.show{display:flex;}
+.spinner{width:44px;height:44px;border:4px solid #1e3a5f;border-top-color:#0e7490;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="icon">${esc(icon)}</div>
+  <div>
+    <h1>Catch of the Day</h1>
+    <div class="sub">${esc(name)} · ${new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'})}</div>
+  </div>
+</div>
+
+<div class="content">
+  <div class="section-label">Today's Catch</div>
+  <div id="catch-list"></div>
+  <button class="btn-add" id="btn-add-catch" onclick="showForm()">🎣 Add Catch</button>
+
+  <hr class="divider" id="form-divider" style="display:none;">
+
+  <div id="catch-form" style="display:none;">
+    <div class="form-card">
+      <h3 id="form-title">Add to Today's Catch</h3>
+      <input type="hidden" id="edit-id">
+      <div class="field">
+        <label>Fish / Species</label>
+        <input id="f-name" type="text" placeholder="e.g. Red Snapper, Grouper, Mahi-Mahi">
+      </div>
+      <div class="market-row">
+        <input type="checkbox" id="f-market" onchange="toggleMarket(this)">
+        <label for="f-market">Market Price (price changes daily)</label>
+      </div>
+      <div id="price-wrap" class="field">
+        <label>Price <span style="color:#64748b;font-weight:400;">(per lb · per piece · etc.)</span></label>
+        <input id="f-price" type="text" placeholder="e.g. $18/lb or $32 plate">
+      </div>
+      <div class="field">
+        <label>Details <span style="color:#64748b;font-weight:400;">(optional — prep, sourced from, limit, etc.)</span></label>
+        <textarea id="f-desc" placeholder="e.g. Fresh caught this morning · Grilled or Fried · Limited availability"></textarea>
+      </div>
+      <div class="img-area" onclick="document.getElementById('f-img-input').click()">
+        <input type="file" id="f-img-input" accept="image/*" capture="environment" style="display:none;" onchange="handleImg(this)">
+        <div id="img-preview"></div>
+        <div class="cam">📷</div>
+        <p>Tap to add a photo from your camera</p>
+      </div>
+      <button class="btn-save" onclick="saveCatch()">Save to Today's Catch</button>
+      <button class="btn-cancel" onclick="hideForm()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="spinner-wrap" id="spinner"><div class="spinner"></div></div>
+
+<script>
+const token = new URLSearchParams(window.location.search).get('token');
+const BASE = '/api/update/' + token;
+var _items = [];
+var _pendingImgUrl = null;
+
+async function init() {
+  spin(true);
+  try {
+    var r = await fetch(BASE + '/catch');
+    var d = await r.json();
+    _items = d.items || [];
+    render();
+  } catch(e) { toast('Failed to load', true); }
+  spin(false);
+}
+
+function render() {
+  var el = document.getElementById('catch-list');
+  if (!_items.length) {
+    el.innerHTML = '<div class="empty"><div class="fish">🐟</div><p>No catch added yet.<br>Tap below to add today\'s fish.</p></div>';
+    return;
+  }
+  el.innerHTML = _items.map(function(item) {
+    var price = item.price_text === 'Market Price'
+      ? '<span class="market-badge">Market Price</span>'
+      : (item.price ? '$' + item.price : (item.price_text || ''));
+    var img = item.image_url
+      ? '<img class="catch-img" src="' + item.image_url + '">'
+      : '<div class="catch-img-ph">🐟</div>';
+    return '<div class="catch-card">' + img +
+      '<div class="catch-info">' +
+        '<div class="catch-name">' + esc(item.item_name) + '</div>' +
+        '<div class="catch-price">' + price + '</div>' +
+        (item.description ? '<div class="catch-desc">' + esc(item.description) + '</div>' : '') +
+        '<div class="catch-actions">' +
+          '<button class="btn-edit" onclick="editItem(\'' + item.id + '\')">Edit</button>' +
+          '<button class="btn-remove" onclick="removeItem(\'' + item.id + '\')">Remove</button>' +
+        '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function showForm(item) {
+  document.getElementById('form-divider').style.display = 'block';
+  document.getElementById('catch-form').style.display = 'block';
+  document.getElementById('btn-add-catch').style.display = 'none';
+  document.getElementById('form-title').textContent = item ? 'Edit Catch Item' : 'Add to Today\'s Catch';
+  document.getElementById('edit-id').value = item ? item.id : '';
+  document.getElementById('f-name').value = item ? item.item_name : '';
+  document.getElementById('f-market').checked = item && item.price_text === 'Market Price';
+  document.getElementById('price-wrap').style.display = (item && item.price_text === 'Market Price') ? 'none' : 'block';
+  document.getElementById('f-price').value = item ? (item.price || item.price_text || '') : '';
+  document.getElementById('f-desc').value = item ? (item.description || '') : '';
+  document.getElementById('img-preview').innerHTML = item && item.image_url
+    ? '<img src="' + item.image_url + '" style="max-height:110px;border-radius:8px;margin-bottom:8px;display:block;margin:0 auto 8px;">'
+    : '';
+  _pendingImgUrl = item ? (item.image_url || null) : null;
+  document.getElementById('f-name').focus();
+}
+
+function editItem(id) {
+  var item = _items.find(function(i){ return i.id === id; });
+  if (item) showForm(item);
+}
+
+function hideForm() {
+  document.getElementById('form-divider').style.display = 'none';
+  document.getElementById('catch-form').style.display = 'none';
+  document.getElementById('btn-add-catch').style.display = 'flex';
+  _pendingImgUrl = null;
+}
+
+function toggleMarket(cb) {
+  document.getElementById('price-wrap').style.display = cb.checked ? 'none' : 'block';
+}
+
+async function handleImg(input) {
+  if (!input.files[0]) return;
+  spin(true);
+  var fd = new FormData();
+  fd.append('image', input.files[0]);
+  var r = await fetch(BASE + '/upload', { method: 'POST', body: fd });
+  var res = await r.json();
+  if (res.url) {
+    _pendingImgUrl = res.url;
+    document.getElementById('img-preview').innerHTML = '<img src="' + res.url + '" style="max-height:110px;border-radius:8px;margin-bottom:8px;display:block;margin:0 auto 8px;">';
+    toast('Photo uploaded!');
+  } else toast('Upload failed', true);
+  spin(false);
+}
+
+async function saveCatch() {
+  var name = document.getElementById('f-name').value.trim();
+  if (!name) { toast('Enter a fish name', true); document.getElementById('f-name').focus(); return; }
+  var isMarket = document.getElementById('f-market').checked;
+  var payload = {
+    id: document.getElementById('edit-id').value || undefined,
+    item_name: name,
+    description: document.getElementById('f-desc').value.trim() || null,
+    is_market_price: isMarket,
+    price: isMarket ? null : document.getElementById('f-price').value.trim(),
+    image_url: _pendingImgUrl || null,
+  };
+  spin(true);
+  try {
+    var r = await fetch(BASE + '/catch', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+    var res = await r.json();
+    if (res.item) {
+      var idx = _items.findIndex(function(i){ return i.id === res.item.id; });
+      if (idx >= 0) _items[idx] = res.item; else _items.push(res.item);
+      render();
+      hideForm();
+      toast('Saved!');
+    } else toast(res.error || 'Save failed', true);
+  } catch(e) { toast('Error saving', true); }
+  spin(false);
+}
+
+async function removeItem(id) {
+  if (!confirm('Remove from today\\'s catch?')) return;
+  spin(true);
+  var r = await fetch(BASE + '/catch/' + id, { method: 'DELETE' });
+  var res = await r.json();
+  if (res.success) { _items = _items.filter(function(i){ return i.id !== id; }); render(); toast('Removed'); }
+  else toast(res.error || 'Failed', true);
+  spin(false);
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg,err){ var el=document.getElementById('toast');el.textContent=msg;el.style.background=err?'#dc2626':'#0e7490';el.classList.add('show');setTimeout(function(){el.classList.remove('show');},2500); }
+function spin(show){ document.getElementById('spinner').classList.toggle('show',show); }
+
+init();
+</script>
+</body>
+</html>

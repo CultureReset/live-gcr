@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading...</title>
+  <style>
+    :root {
+      --accent: #00ada8;
+      --bg: #f5f7fa;
+      --card: #ffffff;
+      --text: #1a1a1a;
+      --muted: #555;
+      --light: #999;
+      --link-bg: #f1f5f9;
+      --radius: 16px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 40px 20px 60px;
+    }
+    .card {
+      max-width: 520px;
+      width: 100%;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 44px 36px;
+      box-shadow: 0 12px 48px rgba(0,0,0,0.10);
+    }
+    .profile { text-align: center; margin-bottom: 24px; }
+    .avatar {
+      width: 90px; height: 90px; border-radius: 50%;
+      object-fit: cover; border: 3px solid var(--accent);
+      box-shadow: 0 6px 20px rgba(0,173,168,0.3);
+      margin: 0 auto 14px; display: block;
+    }
+    .avatar-placeholder {
+      width: 90px; height: 90px; border-radius: 50%;
+      background: var(--accent); color: white; font-size: 36px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 14px;
+      box-shadow: 0 6px 20px rgba(0,173,168,0.3);
+    }
+    .biz-name { font-size: 24px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+    .tagline { font-size: 13px; color: var(--accent); font-weight: 600; margin-bottom: 8px; }
+    .contact-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; font-size: 13px; color: var(--muted); margin-bottom: 3px;
+    }
+    .contact-row a { color: inherit; text-decoration: none; }
+    .open-badge {
+      display: inline-block; padding: 4px 12px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; margin: 8px 0 0;
+    }
+    .open-badge.open { background: #dcfce7; color: #15803d; }
+    .open-badge.closed { background: #fee2e2; color: #dc2626; }
+    .social-row { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+    .social-btn {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--link-bg); display: flex; align-items: center;
+      justify-content: center; text-decoration: none; font-size: 17px;
+      transition: all 0.2s;
+    }
+    .social-btn:hover { background: var(--accent); transform: translateY(-2px); }
+    .section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--light); margin: 20px 0 10px;
+    }
+    .divider { border: none; border-top: 1px solid #eee; margin: 20px 0; }
+    .links { display: flex; flex-direction: column; gap: 12px; }
+    .link-btn {
+      display: flex; align-items: center; gap: 14px;
+      padding: 16px 18px; background: var(--link-bg);
+      border-radius: var(--radius); text-decoration: none;
+      color: var(--text); font-weight: 600; font-size: 15px;
+      transition: all 0.2s; border: 2px solid transparent; cursor: pointer;
+    }
+    .link-btn:hover {
+      background: var(--accent); color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0,173,168,0.3);
+    }
+    .link-btn:hover .link-sub { color: rgba(255,255,255,0.75); }
+    .link-btn:hover .link-arrow { color: white; }
+    .link-icon { font-size: 26px; flex-shrink: 0; }
+    .link-text { flex: 1; }
+    .link-sub { font-size: 12px; font-weight: 400; color: var(--muted); margin-top: 2px; }
+    .link-arrow { font-size: 16px; color: #bbb; }
+
+    /* Tonight's artist / special card */
+    .tonight-card {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      border-radius: var(--radius); padding: 16px 18px;
+      color: white; margin-bottom: 0;
+    }
+    .tonight-label { font-size: 10px; font-weight: 700; letter-spacing: 1px; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 6px; }
+    .tonight-name { font-size: 18px; font-weight: 800; }
+    .tonight-time { font-size: 13px; color: rgba(255,255,255,0.7); margin-top: 4px; }
+    .tonight-genre { font-size: 11px; color: var(--accent); font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Hours table */
+    .hours-list { display: flex; flex-direction: column; gap: 0; }
+    .hours-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px;
+    }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-day { color: var(--muted); }
+    .hours-time { color: var(--text); font-weight: 600; }
+    .hours-today .hours-day { color: var(--accent); font-weight: 700; }
+    .hours-today .hours-time { color: var(--accent); }
+
+    .footer {
+      text-align: center; margin-top: 28px;
+      font-size: 12px; color: var(--light);
+    }
+    .footer a { color: var(--accent); text-decoration: none; }
+    .spinner { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .error-msg { text-align: center; padding: 40px 20px; color: #e55; }
+    @media (max-width: 480px) {
+      body { padding: 16px 12px 40px; }
+      .card { padding: 28px 18px; border-radius: 18px; }
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div id="content"><div class="spinner">Loading...</div></div>
+</div>
+<script>
+const API = '/api';
+const LINKS_HOST = 'https://cybercheck-links.vercel.app';
+
+// Slug from URL: /[slug]/links via vercel rewrite passes ?slug=
+const params = new URLSearchParams(location.search);
+const slug = params.get('slug') || '';
+
+const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const SHORT = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function isOpenNow(hours) {
+  if (!hours || typeof hours !== 'object') return null;
+  const now = new Date();
+  const dayName = DAYS[now.getDay()];
+  const todayHrs = hours[dayName] || hours[dayName.toLowerCase()] || hours[SHORT[now.getDay()]];
+  if (!todayHrs || todayHrs === 'Closed') return false;
+  const m = String(todayHrs).match(/(\d+):?(\d*)\s*(am|pm)?\s*[-–]\s*(\d+):?(\d*)\s*(am|pm)?/i);
+  if (!m) return null;
+  const toMin = (h,mn,ap) => {
+    let hh = parseInt(h);
+    if (ap && ap.toLowerCase() === 'pm' && hh !== 12) hh += 12;
+    if (ap && ap.toLowerCase() === 'am' && hh === 12) hh = 0;
+    return hh * 60 + (parseInt(mn)||0);
+  };
+  const open = toMin(m[1],m[2],m[3]);
+  const close = toMin(m[4],m[5],m[6]);
+  const cur = now.getHours()*60 + now.getMinutes();
+  return cur >= open && cur < close;
+}
+
+function buildHoursHtml(hours) {
+  if (!hours || typeof hours !== 'object') return '';
+  const today = DAYS[new Date().getDay()];
+  const rows = DAYS.map(day => {
+    const h = hours[day] || hours[day.toLowerCase()] || 'Closed';
+    const isToday = day === today;
+    return `<div class="hours-row${isToday ? ' hours-today' : ''}">
+      <span class="hours-day">${esc(day)}</span>
+      <span class="hours-time">${esc(h)}</span>
+    </div>`;
+  }).join('');
+  return `<div class="section-label">Hours</div><div class="hours-list">${rows}</div>`;
+}
+
+function tonightArtist(entity) {
+  const tonight = entity?.tonight || entity?.entity?.tonight || entity?.live_music_tonight;
+  if (!tonight) return '';
+  const artistName = tonight.artist || tonight.name || tonight.performer || '';
+  if (!artistName) return '';
+  const time = tonight.time || tonight.start_time || '';
+  const genre = tonight.genre || tonight.type || '';
+  return `
+    <div class="section-label">Tonight</div>
+    <div class="tonight-card">
+      <div class="tonight-label">🎵 Live Music</div>
+      <div class="tonight-name">${esc(artistName)}</div>
+      ${time ? `<div class="tonight-time">🕐 ${esc(time)}</div>` : ''}
+      ${genre ? `<div class="tonight-genre">${esc(genre)}</div>` : ''}
+    </div>
+  `;
+}
+
+async function load() {
+  const el = document.getElementById('content');
+  if (!slug) { el.innerHTML = '<div class="error-msg">No business specified.</div>'; return; }
+
+  let entity = null;
+  let bizData = null;
+
+  try {
+    // GCR entity has the richest data (name, hours, artists, social, menu, etc.)
+    const r1 = fetch(`${API}/api/gcr/entity/${encodeURIComponent(slug)}`);
+    // Public links-page for logo/contact fallback
+    const r2 = fetch(`${API}/api/public/links-page?subdomain=${encodeURIComponent(slug)}`);
+    const [res1, res2] = await Promise.all([r1, r2]);
+    if (res1.ok) entity = await res1.json();
+    if (res2.ok) bizData = await res2.json();
+  } catch(e) {}
+
+  // GCR response is nested: entity.entity = business info, entity.hours/happy_hour/tonight = top-level
+  const e = entity?.entity || entity || {};
+  const name = e.name || bizData?.name || '';
+  if (!name) { el.innerHTML = '<div class="error-msg">Business not found.</div>'; return; }
+
+  const tagline = e.tagline || e.description?.slice(0,80) || bizData?.tagline || '';
+  const phone = e.phone || bizData?.phone || '';
+  const email = e.email || bizData?.email || '';
+  const logo = e.logo_url || e.image_url || bizData?.logo_url || '';
+  const website = e.website || '';
+  const address = e.address || bizData?.address || '';
+  const city = e.city || bizData?.city || '';
+  const state = e.state || bizData?.state || '';
+  const fullAddr = [address, city, state].filter(Boolean).join(', ');
+  const hours = entity?.hours || bizData?.hours || null;
+  const social = e.social_links || e.social || bizData?.social || {};
+  const accent = e.theme_color || bizData?.theme_color || '#00ada8';
+  const type = e.entity_subtype || e.type || bizData?.type || '';
+
+  // Open now
+  const openState = isOpenNow(hours);
+
+  document.title = name + ' — Links';
+  document.documentElement.style.setProperty('--accent', accent);
+
+  // Avatar
+  const avatarHtml = logo
+    ? `<img class="avatar" src="${esc(logo)}" alt="${esc(name)}">`
+    : `<div class="avatar-placeholder">${esc(name.charAt(0))}</div>`;
+
+  // Open/closed badge
+  const badgeHtml = openState !== null
+    ? `<div><span class="open-badge ${openState ? 'open' : 'closed'}">${openState ? '● Open Now' : '● Closed'}</span></div>`
+    : '';
+
+  // Social icons
+  const socialMap = { instagram:'📸', facebook:'👍', tiktok:'🎵', twitter:'🐦', x:'🐦', youtube:'▶️', linkedin:'💼' };
+  const socialHtml = Object.entries(social)
+    .filter(([,url]) => url)
+    .map(([k,url]) => `<a class="social-btn" href="${esc(url)}" target="_blank" rel="noopener" title="${k}">${socialMap[k]||'🔗'}</a>`)
+    .join('');
+
+  // Core links
+  const links = [];
+
+  links.push({ icon:'🍽️', label:'View Menu', sub:'Full menu & daily specials', href:`${LINKS_HOST}/${encodeURIComponent(slug)}/menu`, external:true });
+
+  if (phone) {
+    links.push({ icon:'📞', label:'Call Us', sub: phone, href:`tel:${phone}`, external:false });
+    const clean = phone.replace(/\D/g,'');
+    links.push({ icon:'💬', label:'Text / WhatsApp', sub:'Message us directly', href:`https://wa.me/1${clean}`, external:true });
+  }
+
+  if (website) {
+    links.push({ icon:'🌐', label:'Visit Website', sub: website.replace(/https?:\/\//,''), href: website, external:true });
+  }
+
+  if (fullAddr) {
+    links.push({ icon:'📍', label:'Get Directions', sub: fullAddr, href:`https://maps.google.com/?q=${encodeURIComponent(fullAddr)}`, external:true });
+  }
+
+  const linksHtml = links.map(l =>
+    `<a class="link-btn" href="${esc(l.href)}" ${l.external ? 'target="_blank" rel="noopener"' : ''}>
+      <span class="link-icon">${l.icon}</span>
+      <span class="link-text">
+        <div>${esc(l.label)}</div>
+        ${l.sub ? `<div class="link-sub">${esc(l.sub)}</div>` : ''}
+      </span>
+      <span class="link-arrow">›</span>
+    </a>`
+  ).join('');
+
+  const artistHtml = tonightArtist(entity);
+  const hoursHtml = buildHoursHtml(hours);
+
+  // Happy hour section — top-level on GCR entity response
+  const hh = entity?.happy_hour || entity?.happy_hours;
+  const hhDeals = Array.isArray(hh?.specials) ? hh.specials : (hh?.deals ? [hh.deals] : []);
+  const hhHtml = hh ? `
+    <div class="section-label">🍺 Happy Hour</div>
+    <div style="background:#fffbeb;border:1px solid #f59e0b;border-radius:var(--radius);padding:16px 18px;margin-bottom:0;">
+      ${hh.times||hh.schedule||hh.hours ? `<div style="font-size:14px;font-weight:700;color:#92400e;margin-bottom:6px;">⏰ ${esc(String(hh.times||hh.schedule||hh.hours))}</div>` : ''}
+      ${hhDeals.map(d=>`<div style="font-size:13px;color:#78350f;margin-bottom:3px;">• ${esc(String(d))}</div>`).join('')}
+    </div>
+    <hr class="divider">` : '';
+
+  el.innerHTML = `
+    <div class="profile">
+      ${avatarHtml}
+      <div class="biz-name">${esc(name)}</div>
+      ${tagline ? `<div class="tagline">${esc(tagline)}</div>` : ''}
+      ${phone ? `<div class="contact-row">📞 <a href="tel:${esc(phone)}">${esc(phone)}</a></div>` : ''}
+      ${email ? `<div class="contact-row">✉️ <a href="mailto:${esc(email)}">${esc(email)}</a></div>` : ''}
+      ${badgeHtml}
+      ${socialHtml ? `<div class="social-row">${socialHtml}</div>` : ''}
+    </div>
+    <hr class="divider">
+    ${artistHtml ? artistHtml + '<hr class="divider">' : ''}
+    ${hhHtml}
+    <div class="section-label">Quick Links</div>
+    <div class="links">${linksHtml}</div>
+    ${hoursHtml ? '<hr class="divider">' + hoursHtml : ''}
+    <div class="footer">
+      Powered by <a href="https://cybercheckinc.com" target="_blank">CyberCheck</a>
+    </div>
+  `;
+}
+
+load();
+</script>
+</body>
+</html>

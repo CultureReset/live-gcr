@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>CyberCheck Business Directory</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#f1f5f9;min-height:100vh;padding-bottom:32px;}
+
+.header{background:linear-gradient(135deg,#0b7a75,#065f5b);padding:18px 16px 14px;position:sticky;top:0;z-index:10;}
+.header h1{font-size:19px;font-weight:800;letter-spacing:-.02em;}
+.header .sub{font-size:12px;color:rgba(255,255,255,.7);margin-top:2px;}
+
+.search-wrap{padding:10px 14px;background:#1e293b;border-bottom:1px solid #334155;position:sticky;top:57px;z-index:9;}
+.search-wrap input{width:100%;padding:10px 14px;background:#0f172a;border:1px solid #334155;border-radius:9px;color:#f1f5f9;font-size:15px;}
+.search-wrap input::placeholder{color:#475569;}
+.search-wrap input:focus{outline:none;border-color:#0b7a75;}
+
+.count{padding:7px 16px 2px;font-size:12px;color:#475569;}
+
+.list{padding:10px 14px;display:flex;flex-direction:column;gap:10px;}
+
+/* Business card */
+.bc{background:#1e293b;border:1px solid #334155;border-radius:13px;overflow:hidden;}
+.bc-hero{width:100%;height:100px;object-fit:cover;display:block;background:#172036;}
+.bc-hero-ph{width:100%;height:80px;display:flex;align-items:center;justify-content:center;font-size:36px;background:linear-gradient(135deg,#172036,#1e293b);}
+.bc-body{padding:13px 14px 10px;}
+.bc-name{font-size:15px;font-weight:800;line-height:1.2;}
+.bc-meta{font-size:12px;color:#64748b;margin-top:3px;}
+.bc-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.bc-chip{font-size:11px;padding:2px 8px;border-radius:20px;background:#0f172a;color:#64748b;border:1px solid #334155;font-weight:600;}
+.bc-chip.green{background:#064e3b;color:#4ade80;border-color:#065f3b;}
+.bc-chip.amber{background:#431407;color:#fb923c;border-color:#7c2d12;}
+.bc-chip.blue{background:#1e3a5f;color:#93c5fd;border-color:#1e40af;}
+
+.bc-btns{display:flex;border-top:1px solid #334155;margin-top:10px;}
+.bc-btn{flex:1;padding:10px 6px;background:none;border:none;font-size:12px;font-weight:700;cursor:pointer;color:#64748b;text-decoration:none;display:flex;align-items:center;justify-content:center;gap:4px;}
+.bc-btn:active{background:#263548;}
+.bc-btn.teal{color:#2dd4bf;}
+.bc-btn.green{color:#4ade80;}
+.bc-btn.purple{color:#a78bfa;}
+.bc-btn+.bc-btn{border-left:1px solid #334155;}
+
+/* Link result panel */
+.link-panel{display:none;padding:12px 14px;background:#0a1628;border-top:1px solid #334155;}
+.link-panel.open{display:block;}
+.lp-label{font-size:10px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.lp-url{width:100%;padding:9px 11px;background:#0f172a;border:1px solid #1e40af;border-radius:7px;color:#60a5fa;font-size:12px;font-family:monospace;word-break:break-all;margin-bottom:8px;line-height:1.4;}
+.lp-row{display:flex;gap:7px;margin-bottom:7px;}
+.lp-btn{flex:1;padding:9px;background:#1e293b;border:1px solid #334155;border-radius:7px;color:#f1f5f9;font-size:13px;font-weight:700;cursor:pointer;text-align:center;text-decoration:none;}
+.lp-btn.teal{background:#0b7a75;border-color:#0b7a75;color:#fff;}
+.sms-row{display:flex;gap:6px;}
+.sms-row input{flex:1;padding:9px 11px;background:#0f172a;border:1px solid #334155;border-radius:7px;color:#f1f5f9;font-size:14px;}
+.sms-btn{padding:9px 14px;background:#7c3aed;border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;}
+
+/* Admin key prompt (inline, small) */
+.key-prompt{background:#0a1628;border:1px solid #1e3a5f;border-radius:9px;padding:12px 14px;margin-bottom:10px;}
+.key-prompt p{font-size:12px;color:#64748b;margin-bottom:8px;}
+.key-row{display:flex;gap:6px;}
+.key-row input{flex:1;padding:8px 11px;background:#0f172a;border:1px solid #334155;border-radius:7px;color:#f1f5f9;font-size:14px;}
+.key-row button{padding:8px 14px;background:#0b7a75;border:none;border-radius:7px;color:#fff;font-size:13px;font-weight:700;cursor:pointer;}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0b7a75;color:#fff;padding:10px 22px;border-radius:20px;font-size:14px;font-weight:600;z-index:600;opacity:0;transition:opacity .2s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;}
+.spinner-wrap{display:none;position:fixed;inset:0;background:rgba(15,23,42,.5);z-index:400;align-items:center;justify-content:center;}
+.spinner-wrap.show{display:flex;}
+.spinner{width:40px;height:40px;border:4px solid #334155;border-top-color:#0b7a75;border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏪 CyberCheck Business Directory</h1>
+  <div class="sub" id="hdr-sub">Loading businesses...</div>
+</div>
+
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="🔍  Search name, city, or type..." oninput="filterList()">
+</div>
+
+<div class="count" id="count"></div>
+<div class="list" id="biz-list">
+  <div style="text-align:center;padding:48px 16px;color:#475569;">Loading...</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="spinner-wrap" id="spinner"><div class="spinner"></div></div>
+
+<script>
+const API = '/api';
+var _all = [];
+var _adminKey = localStorage.getItem('cc_admin_token') || '';
+
+// ── Load businesses from the public API — no auth needed ──────
+async function init() {
+  try {
+    var r  = await fetch(API + '/api/gcr/entities?limit=500');
+    var d  = await r.json();
+    _all   = (d.entities || d.businesses || []).sort(function(a,b){ return a.name.localeCompare(b.name); });
+    document.getElementById('hdr-sub').textContent = _all.length + ' businesses';
+    render(_all);
+  } catch(e) {
+    document.getElementById('biz-list').innerHTML = '<div style="text-align:center;padding:40px;color:#f87171;">Failed to load — check connection</div>';
+  }
+}
+
+function filterList() {
+  var q = document.getElementById('search').value.toLowerCase().trim();
+  render(!q ? _all : _all.filter(function(b){
+    return (b.name||'').toLowerCase().includes(q) ||
+           (b.city||'').toLowerCase().includes(q) ||
+           (b.entity_subtype||b.type||'').toLowerCase().includes(q) ||
+           (b.address_line_1||'').toLowerCase().includes(q);
+  }));
+}
+
+function render(list) {
+  document.getElementById('count').textContent = list.length + ' businesses shown';
+  if (!list.length) {
+    document.getElementById('biz-list').innerHTML = '<div style="text-align:center;padding:40px 16px;color:#475569;">No matches</div>';
+    return;
+  }
+  document.getElementById('biz-list').innerHTML = list.map(bizCard).join('');
+}
+
+function bizCard(b) {
+  var slug    = b.slug || b.subdomain || '';
+  var cid     = 'c-' + slug.replace(/[^a-z0-9]/g,'_');
+  var subtype = (b.entity_subtype || b.type || '').replace(/_/g,' ');
+  var city    = b.city || '';
+  var hero    = b.hero_image_url || b.cover_url || '';
+  var tags    = (b.tags || []).map(function(t){ return typeof t === 'string' ? t : (t.tag||''); }).filter(Boolean);
+  var hasMenu = tags.some(function(t){ return t.includes('menu'); }) || b.has_menu;
+  var hasHH   = !!(b.hh_days);
+  var phone   = b.phone || '';
+  var addr    = [b.address_line_1, city].filter(Boolean).join(', ');
+  var menuUrl  = 'qr-menu.html?slug=' + encodeURIComponent(slug);
+  var linksUrl = slug ? '/' + encodeURIComponent(slug) + '/links' : '';
+
+  var heroHtml = hero
+    ? '<img class="bc-hero" src="'+hero+'" loading="lazy" onerror="this.style.display=\'none\'">'
+    : '<div class="bc-hero-ph">'+(b.icon||b.emoji||'🏪')+'</div>';
+
+  var chips = [];
+  if (hasMenu)  chips.push('<span class="bc-chip green">✓ Menu</span>');
+  if (hasHH)    chips.push('<span class="bc-chip amber">🍺 HH '+esc(b.hh_days||'')+'</span>');
+  if (b.rating) chips.push('<span class="bc-chip blue">★ '+Number(b.rating).toFixed(1)+'</span>');
+
+  return '<div class="bc" id="'+cid+'">' +
+    heroHtml +
+    '<div class="bc-body">' +
+      '<div class="bc-name">'+esc(b.name)+'</div>' +
+      '<div class="bc-meta">'+esc([subtype, addr].filter(Boolean).join(' · '))+'</div>' +
+      (chips.length ? '<div class="bc-chips">'+chips.join('')+'</div>' : '') +
+    '</div>' +
+    '<div class="bc-btns">' +
+      (linksUrl ? '<a href="'+linksUrl+'" class="bc-btn teal">🔗 View Page</a>' : '') +
+      '<a href="'+menuUrl+'" target="_blank" class="bc-btn">📋 Menu</a>' +
+      (phone ? '<a href="tel:'+phone.replace(/\D/g,'')+'" class="bc-btn">📞 Call</a>' : '') +
+      '<button class="bc-btn green" onclick="getDemoLink(\''+esc(b.id)+'\',\''+esc(b.name.replace(/'/g,"\\'")+'\',\''+cid+'\')")>📝 Demo</button>' +
+    '</div>' +
+    '<div class="link-panel" id="lp-'+cid+'"></div>' +
+  '</div>';
+}
+
+// ── Copy menu URL ─────────────────────────────────────────────
+function copyUrl(path) {
+  var full = 'https://cybercheck-links.vercel.app/' + path;
+  navigator.clipboard.writeText(full)
+    .then(function(){ toast('Menu link copied!'); })
+    .catch(function(){ prompt('Copy this link:', full); });
+}
+
+// ── Generate demo edit link ───────────────────────────────────
+async function getDemoLink(entityId, name, cid) {
+  var panel = document.getElementById('lp-' + cid);
+  if (!panel) return;
+
+  // If no admin key saved, show inline key prompt first
+  if (!_adminKey) {
+    panel.innerHTML =
+      '<div class="key-prompt">' +
+        '<p>Enter your admin key once to generate demo links:</p>' +
+        '<div class="key-row">' +
+          '<input type="password" id="kp-'+cid+'" placeholder="Admin key...">' +
+          '<button onclick="saveKey(\''+cid+'\',\''+esc(entityId)+'\',\''+esc(name)+'\')">Go</button>' +
+        '</div>' +
+      '</div>';
+    panel.classList.add('open');
+    return;
+  }
+
+  await _generateLink(entityId, name, cid);
+}
+
+function saveKey(cid, entityId, name) {
+  var inp = document.getElementById('kp-' + cid);
+  var key = inp ? inp.value.trim() : '';
+  if (!key) return;
+  _adminKey = key;
+  localStorage.setItem('cc_admin_token', key);
+  _generateLink(entityId, name, cid);
+}
+
+async function _generateLink(entityId, name, cid) {
+  showSpinner(true);
+  try {
+    var r = await fetch(API + '/api/update/generate', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _adminKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_id: entityId, link_type: 'daily' })
+    });
+    var res = await r.json();
+    if (res.error && !res.url) {
+      // Key probably wrong — clear it and show prompt again
+      _adminKey = ''; localStorage.removeItem('cc_admin_token');
+      toast('Admin key invalid — try again', true);
+      showSpinner(false);
+      getDemoLink(entityId, name, cid);
+      return;
+    }
+    if (res.url) showLinkPanel(cid, res.url, name, entityId);
+    else toast('Could not generate link', true);
+  } catch(e) { toast('Error — check connection', true); }
+  showSpinner(false);
+}
+
+function showLinkPanel(cid, url, name, entityId) {
+  var panel = document.getElementById('lp-' + cid);
+  if (!panel) return;
+  panel.innerHTML =
+    '<div class="lp-label">📝 Editor link — '+esc(name)+'</div>' +
+    '<div class="lp-url">'+url+'</div>' +
+    '<div class="lp-row">' +
+      '<button class="lp-btn teal" onclick="copyLink(\''+url+'\')">📋 Copy Link</button>' +
+      '<a href="'+url+'" target="_blank" class="lp-btn">Open →</a>' +
+    '</div>' +
+    '<div class="sms-row">' +
+      '<input type="tel" placeholder="+1 850 555 0000" id="sms-'+cid+'">' +
+      '<button class="sms-btn" onclick="sendSms(\''+esc(entityId)+'\',\''+cid+'\')">📱 Send SMS</button>' +
+    '</div>';
+  panel.classList.add('open');
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url)
+    .then(function(){ toast('Edit link copied!'); })
+    .catch(function(){ prompt('Copy this edit link:', url); });
+}
+
+async function sendSms(entityId, cid) {
+  var inp = document.getElementById('sms-' + cid);
+  var phone = inp ? inp.value.trim() : '';
+  if (!phone) { toast('Enter a phone number first', true); return; }
+  showSpinner(true);
+  try {
+    var r = await fetch(API + '/api/update/send-sms', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + _adminKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ entity_id: entityId, phone: phone, link_type: 'daily' })
+    });
+    var res = await r.json();
+    if (res.success)     toast('✅ SMS sent to ' + res.sent_to);
+    else if (res.url)    { copyLink(res.url); toast('Twilio not configured — link copied'); }
+    else                 toast(res.error || 'Send failed', true);
+  } catch(e) { toast('Error sending SMS', true); }
+  showSpinner(false);
+}
+
+// ── Utils ─────────────────────────────────────────────────────
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;'); }
+function toast(msg, err) {
+  var el = document.getElementById('toast');
+  el.textContent = msg; el.style.background = err ? '#dc2626' : '#0b7a75';
+  el.classList.add('show'); setTimeout(function(){ el.classList.remove('show'); }, 3000);
+}
+function showSpinner(s){ document.getElementById('spinner').classList.toggle('show',s); }
+
+init();
+</script>
+</body>
+</html>

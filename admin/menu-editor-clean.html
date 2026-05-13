@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Menu Editor</title>
+<style>
+:root {
+  --primary: #0b7a75;
+  --primary-dark: #065f5b;
+  --primary-light: #0ea5a0;
+  --bg: #ffffff;
+  --surface: #f8fafb;
+  --surface-2: #f0f1f3;
+  --border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #64748b;
+  --text-light: #94a3b8;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --radius: 12px;
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font);
+  background: var(--surface);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  padding: 24px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--shadow);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-left { display: flex; align-items: center; gap: 12px; }
+.header-icon { font-size: 28px; }
+.header-title { font-size: 20px; font-weight: 700; }
+.header-sub { font-size: 12px; opacity: 0.9; margin-top: 2px; }
+.logout-btn {
+  background: rgba(255,255,255,0.2);
+  color: white;
+  border: 1px solid rgba(255,255,255,0.3);
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+/* ── Container ───────────────────────────────────────────────────────── */
+.container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+
+/* ── PIN Section ─────────────────────────────────────────────────────── */
+.pin-section {
+  background: var(--bg);
+  padding: 24px;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+}
+
+.pin-section h2 { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+.pin-section p { font-size: 14px; color: var(--text-muted); margin-bottom: 12px; }
+
+.pin-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pin-input {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+.pin-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 122, 117, 0.1);
+}
+
+.btn {
+  padding: 11px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-primary:active { transform: scale(0.98); }
+
+.btn-danger {
+  background: var(--error);
+  color: white;
+}
+
+.btn-danger:hover { background: #dc2626; }
+
+.pin-error {
+  color: var(--error);
+  font-size: 13px;
+  margin-top: 8px;
+  display: none;
+}
+
+.pin-error.show { display: block; }
+
+/* ── Editor Section (hidden until PIN) ────────────────────────────────── */
+.editor { display: none; }
+.editor.unlocked { display: block; }
+
+/* ── Tabs ────────────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 20px;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar { display: none; }
+
+.tab {
+  flex-shrink: 0;
+  padding: 10px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.tab:hover { border-color: var(--primary); color: var(--primary); }
+.tab.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+}
+
+/* ── Panels ──────────────────────────────────────────────────────────── */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── Today's Picks ───────────────────────────────────────────────────── */
+.rotation-card {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.05), rgba(245, 158, 11, 0.02));
+  border: 2px solid var(--warning);
+  padding: 20px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+}
+
+.rotation-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.rotation-card p { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; }
+
+.rotation-section {
+  margin-bottom: 16px;
+}
+
+.rotation-section-name { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+
+.rotation-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rotation-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.rotation-item:hover { border-color: var(--primary); background: linear-gradient(rgba(11, 122, 117, 0.03), rgba(11, 122, 117, 0.03)); }
+
+.rotation-item.selected {
+  background: linear-gradient(rgba(245, 158, 11, 0.1), rgba(245, 158, 11, 0.05));
+  border-color: var(--warning);
+}
+
+.rotation-item input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--warning);
+}
+
+.rotation-item-label { flex: 1; font-size: 13px; font-weight: 600; cursor: pointer; }
+.rotation-item-price { font-size: 13px; color: var(--text-muted); font-weight: 600; }
+
+.rotation-submit {
+  width: 100%;
+  padding: 12px;
+  background: var(--warning);
+  color: #0f172a;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+
+.rotation-submit:hover { background: #d97706; }
+
+.rotation-status {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 8px;
+  min-height: 16px;
+}
+
+/* ── Menu Items ──────────────────────────────────────────────────────── */
+.items-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.item-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  align-items: flex-start;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.item-card:hover {
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.item-image {
+  width: 80px;
+  height: 80px;
+  background: var(--surface);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+  font-size: 32px;
+}
+
+.item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.item-image-upload {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+
+.item-image:hover .item-image-upload { opacity: 1; }
+.item-image input[type="file"] { display: none; }
+
+.item-details { flex: 1; }
+.item-name { font-size: 14px; font-weight: 700; color: var(--text); }
+.item-category { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.item-description { font-size: 13px; color: var(--text-muted); margin-top: 6px; line-height: 1.4; }
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.price-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.price-edit input {
+  width: 70px;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border-radius: 6px;
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-success:hover { background: #059669; }
+
+/* ── Add Item Button ─────────────────────────────────────────────────── */
+.btn-add-item {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 12px;
+  transition: all 0.2s;
+}
+
+.btn-add-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+/* ── Modal ───────────────────────────────────────────────────────────── */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  align-items: flex-end;
+  animation: fadeIn 0.2s;
+}
+
+.modal.open { display: flex; }
+
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+.modal-content {
+  background: var(--bg);
+  width: 100%;
+  max-width: 500px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 24px;
+  animation: slideUp 0.3s;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h2 { font-size: 18px; font-weight: 700; }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-muted);
+}
+
+/* ── Form Fields ─────────────────────────────────────────────────────── */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: var(--font);
+  color: var(--text);
+  transition: all 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(11, 122, 117, 0.1);
+}
+
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* ── Modal Actions ───────────────────────────────────────────────────── */
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.modal-actions .btn { flex: 1; }
+
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover { background: var(--surface-2); }
+
+/* ── Toast ───────────────────────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  padding: 14px 20px;
+  background: var(--success);
+  color: white;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  z-index: 200;
+  animation: slideUp 0.3s;
+  box-shadow: var(--shadow-lg);
+}
+
+.toast.error { background: var(--error); }
+
+/* ── Responsive ──────────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .container { padding: 12px; }
+  .form-row { grid-template-columns: 1fr; }
+  .modal-content { max-width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <div class="header-icon" id="bizIcon">🍽️</div>
+    <div>
+      <div class="header-title" id="bizName">Menu Editor</div>
+      <div class="header-sub" id="bizDate"></div>
+    </div>
+  </div>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+</div>
+
+<div class="container">
+
+  <!-- PIN Section -->
+  <div class="pin-section" id="pinSection">
+    <h2>🔐 Enter PIN to Edit</h2>
+    <p>Enter your 6-digit PIN to unlock the menu editor.</p>
+    <div class="pin-input-group">
+      <input id="pinInput" type="password" class="pin-input" placeholder="000000" maxlength="6">
+      <button class="btn btn-primary" onclick="checkPin()">Unlock</button>
+    </div>
+    <div class="pin-error" id="pinError"></div>
+  </div>
+
+  <!-- Editor (unlocked by PIN) -->
+  <div class="editor" id="editor">
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab('rotation')">🔄 Today's Picks</div>
+      <div class="tab" onclick="switchTab('specials')">⭐ Specials</div>
+      <div class="tab" onclick="switchTab('menu')">🍽️ Menu</div>
+      <div class="tab" onclick="switchTab('drinks')">🥤 Drinks</div>
+      <div class="tab" onclick="switchTab('happyhour')">🍹 Happy Hour</div>
+      <div class="tab" onclick="switchTab('events')">🎉 Events</div>
+      <div class="tab" onclick="switchTab('photos')">📷 Photos</div>
+    </div>
+
+    <!-- Today's Picks -->
+    <div class="panel active" id="panel-rotation">
+      <div class="rotation-card">
+        <h3>🔄 Today's Picks</h3>
+        <p>Select items that are available today. You can override prices for special pricing.</p>
+        <div id="rotationSections"></div>
+        <button class="rotation-submit" onclick="submitRotation()">Submit Today's Picks</button>
+        <div class="rotation-status" id="rotationStatus"></div>
+      </div>
+    </div>
+
+    <!-- Specials -->
+    <div class="panel" id="panel-specials">
+      <div class="items-container" id="list-specials"></div>
+      <button class="btn-add-item" onclick="openAddModal('special')">+ Add Special</button>
+    </div>
+
+    <!-- Menu -->
+    <div class="panel" id="panel-menu">
+      <div class="items-container" id="list-menu"></div>
+      <button class="btn-add-item" onclick="openAddModal('menu')">+ Add Menu Item</button>
+    </div>
+
+    <!-- Drinks -->
+    <div class="panel" id="panel-drinks">
+      <div class="items-container" id="list-drinks"></div>
+      <button class="btn-add-item" onclick="openAddModal('drink')">+ Add Drink</button>
+    </div>
+
+    <!-- Happy Hour -->
+    <div class="panel" id="panel-happyhour">
+      <div class="items-container" id="list-hh"></div>
+      <button class="btn-add-item" onclick="openAddModal('hh')">+ Add HH Item</button>
+    </div>
+
+    <!-- Events -->
+    <div class="panel" id="panel-events">
+      <div class="items-container" id="list-events"></div>
+      <button class="btn-add-item" onclick="openAddModal('event')">+ Add Event</button>
+    </div>
+
+    <!-- Photos -->
+    <div class="panel" id="panel-photos">
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;" id="list-photos"></div>
+      <button class="btn-add-item" onclick="document.getElementById('photoFile').click()">+ Add Photo</button>
+      <input type="file" id="photoFile" accept="image/*" onchange="uploadPhoto(this)" style="display: none;">
+    </div>
+
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 id="modalTitle">Add Item</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = '/api';
+const token = new URLSearchParams(window.location.search).get('token') || localStorage.getItem('menuEditorToken') || '';
+const BASE = `${API}/update/${token}`;
+
+let _pin = localStorage.getItem('menuEditorPin') || '';
+let _data = {};
+let _currentTab = 'rotation';
+let _currentModal = null;
+let _rotationPicks = {};
+
+// Set date
+document.getElementById('bizDate').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+// Check if PIN already saved
+if (_pin) {
+  document.getElementById('pinInput').value = _pin;
+  unlockEditor();
+}
+
+function checkPin() {
+  const pin = document.getElementById('pinInput').value.trim();
+  if (pin.length !== 6) {
+    showError('pinError', 'PIN must be 6 digits');
+    return;
+  }
+  _pin = pin;
+  localStorage.setItem('menuEditorPin', pin);
+  localStorage.setItem('menuEditorToken', token);
+  unlockEditor();
+}
+
+function unlockEditor() {
+  document.getElementById('pinSection').style.display = 'none';
+  document.getElementById('editor').classList.add('unlocked');
+  loadData();
+}
+
+async function loadData() {
+  try {
+    const r = await fetch(`${BASE}/data`, { headers: { 'x-link-passcode': _pin } });
+    if (!r.ok) throw new Error('Failed to load');
+    _data = await r.json();
+    renderAll();
+    loadRotation();
+  } catch (e) {
+    showToast('Failed to load menu data', true);
+  }
+}
+
+async function loadRotation() {
+  try {
+    const r = await fetch(`${BASE}/daily-rotation`, { headers: { 'x-link-passcode': _pin } });
+    if (!r.ok) return;
+    const data = await r.json();
+    renderRotation(data.sections || []);
+  } catch (e) {}
+}
+
+function renderRotation(sections) {
+  const html = sections.map(s => `
+    <div class="rotation-section">
+      <div class="rotation-section-name">${s.emoji} ${s.name}</div>
+      <div class="rotation-items">
+        ${(s.options || []).map(o => `
+          <label class="rotation-item ${_rotationPicks[o.id] ? 'selected' : ''}">
+            <input type="checkbox" ${_rotationPicks[o.id] ? 'checked' : ''} onchange="toggleRotation('${o.id}')">
+            <span class="rotation-item-label">${o.name}</span>
+            <span class="rotation-item-price">$${o.default_price || 0}</span>
+          </label>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+  document.getElementById('rotationSections').innerHTML = html || '<p>No rotation sections set up</p>';
+}
+
+function toggleRotation(optionId) {
+  if (_rotationPicks[optionId]) {
+    delete _rotationPicks[optionId];
+  } else {
+    _rotationPicks[optionId] = { priceOverride: null };
+  }
+  loadRotation();
+}
+
+async function submitRotation() {
+  const picks = Object.keys(_rotationPicks).map(id => ({ option_id: id, price_override: null }));
+  try {
+    await fetch(`${BASE}/daily-rotation/submit`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ picks })
+    });
+    showToast('Today\'s picks saved!');
+    _rotationPicks = {};
+  } catch (e) {
+    showToast('Failed to save picks', true);
+  }
+}
+
+function renderAll() {
+  const ent = _data.entity || {};
+  document.getElementById('bizName').textContent = ent.name || 'Menu Editor';
+  document.getElementById('bizIcon').textContent = ent.icon || '🍽️';
+  renderItems('specials', _data.specials || [], 'special');
+  renderItems('menu', _data.menu_items || [], 'menu');
+  renderItems('drinks', _data.drink_items || [], 'drink');
+  renderItems('hh', _data.hh_items || [], 'hh');
+  renderItems('events', _data.events || [], 'event');
+  renderPhotos(_data.photos || []);
+}
+
+function renderItems(tabId, items, type) {
+  const html = items.map((item, i) => `
+    <div class="item-card">
+      <div class="item-image" onclick="uploadItemImage('${type}', ${i})">
+        ${item.image_url ? `<img src="${item.image_url}" alt="">` : '📷'}
+        <div class="item-image-upload">Change photo</div>
+        <input type="file" accept="image/*" onchange="handleImageUpload(event, '${type}', ${i})">
+      </div>
+      <div class="item-details">
+        <div class="item-name">${item.item_name || item.name || item.special_name || item.event_name || ''}</div>
+        ${item.category ? `<div class="item-category">${item.category}</div>` : ''}
+        ${item.description ? `<div class="item-description">${item.description}</div>` : ''}
+        <div class="item-actions">
+          <div class="price-edit">
+            <span>$</span>
+            <input type="number" step="0.01" value="${item.price || item.hh_price || 0}" id="price-${type}-${i}">
+            <button class="btn btn-sm btn-primary" onclick="saveItemPrice('${type}', ${i})">Update</button>
+          </div>
+          <button class="btn btn-sm btn-success" onclick="toggleAvailability('${type}', ${i})">
+            ${item.is_available === false ? 'Mark Available' : 'Sold Out'}
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="deleteItem('${type}', ${i})">Delete</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+  document.getElementById(`list-${tabId}`).innerHTML = html || '<p style="padding: 20px; text-align: center; color: #94a3b8;">No items yet</p>';
+}
+
+function renderPhotos(photos) {
+  const html = photos.map((p, i) => `
+    <div style="position: relative;">
+      <img src="${p.image_url}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 8px;">
+      <button onclick="deletePhoto(${i})" style="position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.7); color: #ef4444; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 16px;">✕</button>
+    </div>
+  `).join('');
+  document.getElementById('list-photos').innerHTML = html;
+}
+
+function switchTab(tab) {
+  _currentTab = tab;
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    const tabs = ['rotation', 'specials', 'menu', 'drinks', 'happyhour', 'events', 'photos'];
+    t.classList.toggle('active', tabs[i] === tab);
+  });
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`panel-${tab}`).classList.add('active');
+}
+
+function openAddModal(type) {
+  _currentModal = type;
+  const title = {
+    special: 'Add Special',
+    menu: 'Add Menu Item',
+    drink: 'Add Drink',
+    hh: 'Add Happy Hour Item',
+    event: 'Add Event'
+  }[type] || 'Add Item';
+
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('modalBody').innerHTML = buildModalForm(type, null);
+  document.getElementById('modal').classList.add('open');
+}
+
+function buildModalForm(type, item) {
+  const isNew = !item;
+  let html = '';
+
+  const uploadField = (field, label) => {
+    const current = item && item[field] ? `<img src="${item[field]}" style="max-height:100px;border-radius:8px;margin-bottom:8px;display:block;">` : '';
+    return `<div class="form-group">
+      <label>${label}</label>
+      <div style="background: var(--surface); border: 2px dashed var(--border); border-radius: 8px; padding: 16px; text-align: center; cursor: pointer;" onclick="document.getElementById('file-${field}').click()">
+        ${current}
+        <div style="font-size: 24px; margin-bottom: 8px;">📷</div>
+        <div style="font-size: 13px; color: var(--text-muted);">${current ? 'Tap to change photo' : 'Tap to add photo'}</div>
+        <input type="file" id="file-${field}" accept="image/*" style="display:none;" onchange="handleImageUpload(event, '${type}', '${field}')">
+      </div>
+    </div>`;
+  };
+
+  html += `<input type="hidden" id="modal-id" value="${item?.id || ''}">`;
+
+  if (type === 'special') {
+    html += `
+      <div class="form-group">
+        <label>Special Name</label>
+        <input type="text" id="modal-name" placeholder="e.g. $5 Long Islands" value="${item?.special_name || ''}">
+      </div>
+      <div class="form-group">
+        <label>Price / Deal</label>
+        <input type="text" id="modal-discount" placeholder="e.g. $5 or 2-for-1" value="${item?.discount_text || ''}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc" placeholder="Any details...">${item?.description || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Days</label>
+        <input type="text" id="modal-days" placeholder="e.g. Monday,Tuesday or Everyday" value="${item?.days || ''}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="text" id="modal-start" placeholder="4:00 PM" value="${item?.start_time || ''}">
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="text" id="modal-end" placeholder="7:00 PM" value="${item?.end_time || ''}">
+        </div>
+      </div>
+      ${uploadField('image_url', 'Photo')}
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: none; letter-spacing: 0;">
+          <input type="checkbox" id="modal-active" ${item && item.is_active !== false ? 'checked' : ''} style="width: auto; margin: 0;">
+          Active today
+        </label>
+      </div>
+    `;
+  } else if (type === 'menu') {
+    html += `
+      <div class="form-group">
+        <label>Item Name</label>
+        <input type="text" id="modal-name" placeholder="e.g. Grilled Grouper" value="${item?.item_name || ''}">
+      </div>
+      <div class="form-group">
+        <label>Category / Section</label>
+        <input type="text" id="modal-category" placeholder="e.g. Main Dishes" value="${item?.category || ''}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc" placeholder="Ingredients, prep style...">${item?.description || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Price ($)</label>
+        <input type="number" id="modal-price" step="0.01" placeholder="0.00" value="${item?.price ?? ''}">
+      </div>
+      ${uploadField('image_url', 'Photo')}
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: none; letter-spacing: 0;">
+          <input type="checkbox" id="modal-active" ${item && item.is_available !== false ? 'checked' : ''} style="width: auto; margin: 0;">
+          Available
+        </label>
+      </div>
+    `;
+  } else if (type === 'drink') {
+    html += `
+      <div class="form-group">
+        <label>Drink Name</label>
+        <input type="text" id="modal-name" placeholder="e.g. Craft IPA" value="${item?.item_name || ''}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc" placeholder="Style, ABV, brewery...">${item?.description || ''}</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Price ($)</label>
+          <input type="number" id="modal-price" step="0.01" placeholder="0.00" value="${item?.price ?? ''}">
+        </div>
+        <div class="form-group">
+          <label>Price Text</label>
+          <input type="text" id="modal-price-text" placeholder="e.g. $6 pint" value="${item?.price_text || ''}">
+        </div>
+      </div>
+      ${uploadField('image_url', 'Photo')}
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: none; letter-spacing: 0;">
+          <input type="checkbox" id="modal-active" ${item && item.is_available !== false ? 'checked' : ''} style="width: auto; margin: 0;">
+          Available
+        </label>
+      </div>
+    `;
+  } else if (type === 'hh') {
+    html += `
+      <div class="form-group">
+        <label>Item Name</label>
+        <input type="text" id="modal-name" placeholder="e.g. Draft Beer" value="${item?.item_name || ''}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc">${item?.description || ''}</textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Regular Price ($)</label>
+          <input type="number" id="modal-reg-price" step="0.01" placeholder="0.00" value="${item?.regular_price ?? ''}">
+        </div>
+        <div class="form-group">
+          <label>HH Price ($)</label>
+          <input type="number" id="modal-hh-price" step="0.01" placeholder="0.00" value="${item?.hh_price ?? ''}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Price Text</label>
+        <input type="text" id="modal-price-text" placeholder="e.g. $3 draft beers" value="${item?.price_text || ''}">
+      </div>
+      ${uploadField('image_url', 'Photo')}
+    `;
+  } else if (type === 'event') {
+    html += `
+      <div class="form-group">
+        <label>Event Name</label>
+        <input type="text" id="modal-name" placeholder="e.g. Live Music Night" value="${item?.event_name || ''}">
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea id="modal-desc">${item?.description || ''}</textarea>
+      </div>
+      <div class="form-group">
+        <label>Date</label>
+        <input type="date" id="modal-date" value="${item?.event_date || ''}">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Time</label>
+          <input type="text" id="modal-start" placeholder="8:00 PM" value="${item?.start_time || ''}">
+        </div>
+        <div class="form-group">
+          <label>End Time</label>
+          <input type="text" id="modal-end" placeholder="11:00 PM" value="${item?.end_time || ''}">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Cover Charge</label>
+        <input type="text" id="modal-cover" placeholder="e.g. $10 or Free" value="${item?.cover_charge || ''}">
+      </div>
+      ${uploadField('image_url', 'Photo')}
+      <div class="form-group">
+        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; text-transform: none; letter-spacing: 0;">
+          <input type="checkbox" id="modal-active" ${item && item.is_active !== false ? 'checked' : ''} style="width: auto; margin: 0;">
+          Active
+        </label>
+      </div>
+    `;
+  }
+
+  return html;
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  _currentModal = null;
+}
+
+async function saveItem() {
+  if (!_currentModal) return;
+
+  const id = document.getElementById('modal-id').value || null;
+  const type = _currentModal;
+  const payload = { id };
+
+  // Get image URL from file input
+  const imageInput = document.querySelector('#modal input[type=file]');
+  if (imageInput?.dataset.url) payload.image_url = imageInput.dataset.url;
+  else if (document.querySelector('#modalBody img')) payload.image_url = document.querySelector('#modalBody img').src;
+
+  const endpoints = {
+    special: '/specials',
+    menu: '/menu-items',
+    drink: '/drink-items',
+    hh: '/hh-items',
+    event: '/events'
+  };
+
+  if (type === 'special') {
+    payload.special_name = getInputValue('modal-name');
+    payload.discount_text = getInputValue('modal-discount');
+    payload.description = getInputValue('modal-desc');
+    payload.days = getInputValue('modal-days');
+    payload.start_time = getInputValue('modal-start');
+    payload.end_time = getInputValue('modal-end');
+    payload.is_active = document.getElementById('modal-active')?.checked ?? true;
+  } else if (type === 'menu') {
+    payload.item_name = getInputValue('modal-name');
+    payload.category = getInputValue('modal-category');
+    payload.description = getInputValue('modal-desc');
+    payload.price = parseFloat(getInputValue('modal-price')) || null;
+    payload.is_available = document.getElementById('modal-active')?.checked ?? true;
+  } else if (type === 'drink') {
+    payload.item_name = getInputValue('modal-name');
+    payload.description = getInputValue('modal-desc');
+    payload.price = parseFloat(getInputValue('modal-price')) || null;
+    payload.price_text = getInputValue('modal-price-text');
+    payload.is_available = document.getElementById('modal-active')?.checked ?? true;
+  } else if (type === 'hh') {
+    payload.item_name = getInputValue('modal-name');
+    payload.description = getInputValue('modal-desc');
+    payload.regular_price = parseFloat(getInputValue('modal-reg-price')) || null;
+    payload.hh_price = parseFloat(getInputValue('modal-hh-price')) || null;
+    payload.price_text = getInputValue('modal-price-text');
+  } else if (type === 'event') {
+    payload.event_name = getInputValue('modal-name');
+    payload.description = getInputValue('modal-desc');
+    payload.event_date = getInputValue('modal-date');
+    payload.start_time = getInputValue('modal-start');
+    payload.end_time = getInputValue('modal-end');
+    payload.cover_charge = getInputValue('modal-cover');
+    payload.is_active = document.getElementById('modal-active')?.checked ?? true;
+  }
+
+  showSpinner(true);
+  try {
+    const r = await fetch(`${BASE}${endpoints[type]}`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const res = await r.json();
+    if (res.item) {
+      const lists = {
+        special: 'specials',
+        menu: 'menu_items',
+        drink: 'drink_items',
+        hh: 'hh_items',
+        event: 'events'
+      };
+      const key = lists[type];
+      const idx = (_data[key] || []).findIndex(i => i.id === res.item.id);
+      if (idx >= 0) _data[key][idx] = res.item;
+      else { if (!_data[key]) _data[key] = []; _data[key].push(res.item); }
+      renderAll();
+      closeModal();
+      showToast('Saved!');
+    } else {
+      showToast(res.error || 'Save failed', true);
+    }
+  } catch (e) {
+    showToast('Error saving', true);
+  }
+  showSpinner(false);
+}
+
+async function handleImageUpload(event, type, field) {
+  const input = event.target;
+  if (!input.files[0]) return;
+
+  showSpinner(true);
+  const fd = new FormData();
+  fd.append('image', input.files[0]);
+
+  try {
+    const r = await fetch(`${BASE}/photos`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin },
+      body: fd
+    });
+    const res = await r.json();
+    if (res.url) {
+      input.dataset.url = res.url;
+      const area = input.closest('[style*="border: 2px dashed"]');
+      let img = area?.querySelector('img');
+      if (img) img.src = res.url;
+      else {
+        img = document.createElement('img');
+        img.src = res.url;
+        img.style.cssText = 'max-height:100px;border-radius:8px;margin-bottom:8px;display:block;';
+        const icon = area?.querySelector('[style*="font-size: 24px"]');
+        if (icon) area.insertBefore(img, icon);
+      }
+      showToast('Photo uploaded!');
+    } else {
+      showToast(res.error || 'Upload failed', true);
+    }
+  } catch (e) {
+    showToast('Upload error', true);
+  }
+  showSpinner(false);
+}
+
+async function deleteItem(type, index) {
+  if (!confirm('Delete this item?')) return;
+
+  const lists = { special: 'specials', menu: 'menu_items', drink: 'drink_items', hh: 'hh_items', event: 'events' };
+  const items = _data[lists[type]] || [];
+  const item = items[index];
+  if (!item) return;
+
+  const endpoints = {
+    special: '/specials/',
+    menu: '/menu-items/',
+    drink: '/drink-items/',
+    hh: '/hh-items/',
+    event: '/events/'
+  };
+
+  showSpinner(true);
+  try {
+    const r = await fetch(`${BASE}${endpoints[type]}${item.id}`, {
+      method: 'DELETE',
+      headers: { 'x-link-passcode': _pin }
+    });
+    const res = await r.json();
+    if (res.success) {
+      _data[lists[type]] = items.filter(i => i.id !== item.id);
+      renderAll();
+      showToast('Deleted');
+    } else {
+      showToast(res.error || 'Delete failed', true);
+    }
+  } catch (e) {
+    showToast('Error deleting', true);
+  }
+  showSpinner(false);
+}
+
+async function toggleAvailability(type, index) {
+  const lists = { special: 'specials', menu: 'menu_items', drink: 'drink_items', hh: 'hh_items', event: 'events' };
+  const items = _data[lists[type]] || [];
+  const item = items[index];
+  if (!item) return;
+
+  const newAvail = item.is_available !== false ? false : true;
+  const endpoints = { menu: '/menu-items', drink: '/drink-items', hh: '/hh-items' };
+
+  if (!endpoints[type]) return;
+
+  showSpinner(true);
+  try {
+    const payload = { id: item.id };
+    if (type !== 'hh') payload.is_available = newAvail;
+
+    const r = await fetch(`${BASE}${endpoints[type]}`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const res = await r.json();
+    if (res.item) {
+      items[index] = res.item;
+      renderAll();
+      showToast(newAvail ? 'Marked available' : 'Marked sold out');
+    } else {
+      showToast(res.error || 'Update failed', true);
+    }
+  } catch (e) {
+    showToast('Error', true);
+  }
+  showSpinner(false);
+}
+
+async function saveItemPrice(type, index) {
+  const lists = { special: 'specials', menu: 'menu_items', drink: 'drink_items', hh: 'hh_items', event: 'events' };
+  const items = _data[lists[type]] || [];
+  const item = items[index];
+  if (!item) return;
+
+  const priceInput = document.getElementById(`price-${type}-${index}`);
+  const price = parseFloat(priceInput.value);
+
+  const endpoints = {
+    special: '/specials',
+    menu: '/menu-items',
+    drink: '/drink-items',
+    hh: '/hh-items',
+    event: '/events'
+  };
+
+  showSpinner(true);
+  try {
+    const payload = { id: item.id };
+    if (type === 'hh') payload.hh_price = price;
+    else payload.price = price;
+
+    const r = await fetch(`${BASE}${endpoints[type]}`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const res = await r.json();
+    if (res.item) {
+      items[index] = res.item;
+      renderAll();
+      showToast('Price updated!');
+    } else {
+      showToast(res.error || 'Update failed', true);
+    }
+  } catch (e) {
+    showToast('Error updating', true);
+  }
+  showSpinner(false);
+}
+
+async function uploadPhoto(input) {
+  if (!input.files[0]) return;
+
+  showSpinner(true);
+  const fd = new FormData();
+  fd.append('image', input.files[0]);
+
+  try {
+    const r = await fetch(`${BASE}/photos?save_photo=1`, {
+      method: 'POST',
+      headers: { 'x-link-passcode': _pin },
+      body: fd
+    });
+    const res = await r.json();
+    if (res.photo) {
+      if (!_data.photos) _data.photos = [];
+      _data.photos.unshift(res.photo);
+      renderPhotos(_data.photos);
+      showToast('Photo saved!');
+    } else {
+      showToast(res.error || 'Upload failed', true);
+    }
+  } catch (e) {
+    showToast('Upload error', true);
+  }
+  showSpinner(false);
+  input.value = '';
+}
+
+async function deletePhoto(index) {
+  if (!confirm('Remove this photo?')) return;
+
+  const photos = _data.photos || [];
+  const photo = photos[index];
+  if (!photo) return;
+
+  showSpinner(true);
+  try {
+    const r = await fetch(`${BASE}/photos/${photo.id}`, {
+      method: 'DELETE',
+      headers: { 'x-link-passcode': _pin }
+    });
+    const res = await r.json();
+    if (res.success) {
+      _data.photos = photos.filter(p => p.id !== photo.id);
+      renderPhotos(_data.photos);
+      showToast('Photo removed');
+    } else {
+      showToast(res.error || 'Delete failed', true);
+    }
+  } catch (e) {
+    showToast('Error deleting', true);
+  }
+  showSpinner(false);
+}
+
+function logout() {
+  _pin = '';
+  localStorage.removeItem('menuEditorPin');
+  location.reload();
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function showToast(msg, isError = false) {
+  const toast = document.createElement('div');
+  toast.className = `toast ${isError ? 'error' : ''}`;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function showSpinner(show) {
+  // Add simple spinner styling or use existing if available
+  if (show) {
+    if (!document.getElementById('spinner')) {
+      const spinner = document.createElement('div');
+      spinner.id = 'spinner';
+      spinner.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;display:flex;align-items:center;justify-content:center;';
+      spinner.innerHTML = '<div style="width:44px;height:44px;border:4px solid rgba(11,122,117,0.3);border-top-color:#0b7a75;border-radius:50%;animation:spin 0.7s linear infinite;"></div><style>@keyframes spin{to{transform:rotate(360deg);}}</style>';
+      document.body.appendChild(spinner);
+    } else {
+      document.getElementById('spinner').style.display = 'flex';
+    }
+  } else {
+    const spinner = document.getElementById('spinner');
+    if (spinner) spinner.style.display = 'none';
+  }
+}
+
+function getInputValue(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+function uploadItemImage(type, index) {
+  const inputId = `file-image_url-${type}-${index}`;
+  let input = document.getElementById(inputId);
+  if (!input) {
+    input = document.createElement('input');
+    input.id = inputId;
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.style.display = 'none';
+    input.onchange = (e) => handleImageUpload(e, type, 'image_url');
+    document.body.appendChild(input);
+  }
+  input.click();
+}
+</script>
+
+</body>
+</html>
